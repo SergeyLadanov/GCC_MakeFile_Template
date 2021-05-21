@@ -23,8 +23,10 @@ TARGET = MakeTemplate
 USE_CPP = 1
 # debug build?
 DEBUG = 1
-# optimization
-OPT = -Og -fno-exceptions -fno-rtti
+# optimization for C
+C_OPT = -Og
+# optimization for CPP
+CPP_OPT = -Og -fno-exceptions -fno-rtti
 
 
 #######################################
@@ -83,35 +85,44 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 
+# CPP defines
+CPP_DEFS =  \
 
 # AS includes
 AS_INCLUDES = 
 
 # C includes
-C_INCLUDES =  \
+C_CPP_INCLUDES =  \
 -I Core/Inc  \
 -I C_Code_Folder/Inc  \
 -I CPP_Code_Folder/Inc
 
 
 # compile gcc flags
-ASFLAGS = $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall
+C_ASFLAGS = $(AS_DEFS) $(AS_INCLUDES) $(C_OPT) -Wall
 
-CFLAGS = $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall
+C_FLAGS = $(C_DEFS) $(C_CPP_INCLUDES) $(C_OPT) -Wall
+
+CPP_ASFLAGS = $(AS_DEFS) $(AS_INCLUDES) $(CPP_OPT) -Wall
+
+CPP_FLAGS = $(CPP_DEFS) $(C_CPP_INCLUDES) $(CPP_OPT) -Wall
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+C_FLAGS += -g -gdwarf-2
+CPP_FLAGS += -g -gdwarf-2
 endif
 
 
 # Generate dependency information
-CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+C_FLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+
+CPP_FLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 #######################################
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F103VCTx_FLASH.ld
+LDSCRIPT = 
 
 # libraries
 LIBS = 
@@ -135,11 +146,11 @@ vpath %$(CPP_FILE_EXTENSION) $(sort $(dir $(CPP_SOURCES)))
 endif
 
 $(BUILD_DIR)/%.o: %$(C_FILE_EXTENSION) Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(C_FILE_EXTENSION)=.lst)) $< -o $@
+	$(CC) -c $(C_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(C_FILE_EXTENSION)=.lst)) $< -o $@
 
 
 $(BUILD_DIR)/%.o: %$(CPP_FILE_EXTENSION) Makefile | $(BUILD_DIR) 
-	$(CC_CPP) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(CPP_FILE_EXTENSION)=.lst)) $< -o $@
+	$(CC_CPP) -c $(CPP_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(CPP_FILE_EXTENSION)=.lst)) $< -o $@
 
 ifeq ($(USE_CPP), 1)
 $(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile
