@@ -8,7 +8,7 @@
             "name": "g++.exe - Сборка и отладка активного файла",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\Bin\\smartfan.exe",
+            "program": "${workspaceFolder}\\Bin\\MakeTemplate.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
