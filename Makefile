@@ -97,6 +97,16 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
+#######################################
+# LDFLAGS
+#######################################
+# link script
+LDSCRIPT = STM32F103VCTx_FLASH.ld
+
+# libraries
+LIBS =  
+LIBDIR = 
+LDFLAGS = $(LIBDIR) $(LIBS)
 
 
 # default action: build all
@@ -116,7 +126,7 @@ $(BUILD_DIR)/%.o: %$(FILE_EXTENSION) Makefile | $(BUILD_DIR)
 
 
 $(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) -o $@	
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@	
 	
 $(BUILD_DIR):
 	mkdir $@		
