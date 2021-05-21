@@ -4,6 +4,7 @@
 // Основная программа
 int main(void)
 {
-    HelloWorld();
+    Hello_From_C();
+    Hello_From_CPP();
     return 0;  
 }

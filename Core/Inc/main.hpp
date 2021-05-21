@@ -1,4 +1,5 @@
 
 #pragma once
 
-#include "file1.hpp"
+#include "file1.h"
+#include "file2.hpp"

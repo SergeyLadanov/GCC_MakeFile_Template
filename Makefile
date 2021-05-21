@@ -19,6 +19,8 @@ TARGET = MakeTemplate
 ######################################
 # building variables
 ######################################
+# use cpp?
+USE_CPP = 1
 # debug build?
 DEBUG = 1
 # optimization
@@ -36,12 +38,17 @@ BUILD_DIR = Bin
 ######################################
 
 # Source file extension
-FILE_EXTENSION = .cpp
+C_FILE_EXTENSION = .c
+CPP_FILE_EXTENSION = .cpp
 
 # C sources
 C_SOURCES =  \
-Core/Src/main.cpp \
-Folder1/Src/file1.cpp
+C_Code_Folder/Src/file1.c
+
+# CPP sources
+CPP_SOURCES = \
+Core/Src/main.cpp  \
+CPP_Code_Folder/Src/file2.cpp
 
 
 
@@ -51,13 +58,15 @@ Folder1/Src/file1.cpp
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
-CC = $(GCC_PATH)/g++
-AS = $(GCC_PATH)/g++ -x assembler-with-cpp
+CC_CPP = $(GCC_PATH)/g++
+CC = $(GCC_PATH)/gcc
+AS = $(GCC_PATH)/gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/objcopy
 SZ = $(GCC_PATH)/size
 else
-CC = g++
-AS = g++ -x assembler-with-cpp
+CC_CPP = g++
+CC = gcc
+AS = gcc -x assembler-with-cpp
 CP = objcopy
 SZ = size
 endif
@@ -80,8 +89,9 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--I Folder1/Inc  \
--I Core/Inc
+-I Core/Inc  \
+-I C_Code_Folder/Inc  \
+-I CPP_Code_Folder/Inc
 
 
 # compile gcc flags
@@ -104,10 +114,9 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F103VCTx_FLASH.ld
 
 # libraries
-LIBS =  
+LIBS = 
 LIBDIR = 
 LDFLAGS = $(LIBDIR) $(LIBS)
-
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET)
@@ -117,16 +126,31 @@ all: $(BUILD_DIR)/$(TARGET)
 # build the application
 #######################################
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:$(FILE_EXTENSION)=.o)))
-vpath %$(FILE_EXTENSION) $(sort $(dir $(C_SOURCES)))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:$(C_FILE_EXTENSION)=.o)))
+vpath %$(C_FILE_EXTENSION) $(sort $(dir $(C_SOURCES)))
+
+ifeq ($(USE_CPP), 1)
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:$(CPP_FILE_EXTENSION)=.o)))
+vpath %$(CPP_FILE_EXTENSION) $(sort $(dir $(CPP_SOURCES)))
+endif
+
+$(BUILD_DIR)/%.o: %$(C_FILE_EXTENSION) Makefile | $(BUILD_DIR) 
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(C_FILE_EXTENSION)=.lst)) $< -o $@
 
 
-$(BUILD_DIR)/%.o: %$(FILE_EXTENSION) Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(FILE_EXTENSION)=.lst)) $< -o $@
+$(BUILD_DIR)/%.o: %$(CPP_FILE_EXTENSION) Makefile | $(BUILD_DIR) 
+	$(CC_CPP) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:$(CPP_FILE_EXTENSION)=.lst)) $< -o $@
 
-
+ifeq ($(USE_CPP), 1)
 $(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@	
+	$(CC_CPP) $(OBJECTS) $(LDFLAGS) -o $@
+else
+$(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+endif
+
+
+	
 	
 $(BUILD_DIR):
 	mkdir $@		
