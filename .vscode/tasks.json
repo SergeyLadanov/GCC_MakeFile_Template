@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "cppbuild",
+            "type": "shell",
             "label": "C/C++: Сборка проекта",
             "command": "",
             "args": [
@@ -19,7 +19,7 @@
             "detail": "Компилятор: \"g++.exe\""
         },
         {
-            "type": "cppbuild",
+            "type": "shell",
             "label": "C/C++: Clean",
             "command": "",
             "args": [
